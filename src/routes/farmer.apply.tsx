@@ -99,8 +99,8 @@ function ApplyPage() {
       submitted_documents: provided,
       status,
       priority_score: Math.round(score),
-      ai_completeness: completeness as unknown as Record<string, unknown>,
-      ai_fraud: fraud as unknown as Record<string, unknown>,
+      ai_completeness: JSON.parse(JSON.stringify(completeness)),
+      ai_fraud: JSON.parse(JSON.stringify(fraud)),
     }]);
     setBusy(false);
     if (error) {
