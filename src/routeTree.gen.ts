@@ -11,10 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as FarmerGrievanceRouteImport } from './routes/farmer.grievance'
 import { Route as FarmerApplyRouteImport } from './routes/farmer.apply'
+import { Route as AdminGrievancesRouteImport } from './routes/admin.grievances'
+import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 
 const FarmerRoute = FarmerRouteImport.update({
   id: '/farmer',
@@ -24,6 +28,11 @@ const FarmerRoute = FarmerRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -36,6 +45,11 @@ const FarmerIndexRoute = FarmerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => FarmerRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const FarmerGrievanceRoute = FarmerGrievanceRouteImport.update({
   id: '/grievance',
   path: '/grievance',
@@ -46,54 +60,92 @@ const FarmerApplyRoute = FarmerApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => FarmerRoute,
 } as any)
+const AdminGrievancesRoute = AdminGrievancesRouteImport.update({
+  id: '/grievances',
+  path: '/grievances',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/farmer': typeof FarmerRouteWithChildren
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/grievances': typeof AdminGrievancesRoute
   '/farmer/apply': typeof FarmerApplyRoute
   '/farmer/grievance': typeof FarmerGrievanceRoute
+  '/admin/': typeof AdminIndexRoute
   '/farmer/': typeof FarmerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/grievances': typeof AdminGrievancesRoute
   '/farmer/apply': typeof FarmerApplyRoute
   '/farmer/grievance': typeof FarmerGrievanceRoute
+  '/admin': typeof AdminIndexRoute
   '/farmer': typeof FarmerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/farmer': typeof FarmerRouteWithChildren
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/grievances': typeof AdminGrievancesRoute
   '/farmer/apply': typeof FarmerApplyRoute
   '/farmer/grievance': typeof FarmerGrievanceRoute
+  '/admin/': typeof AdminIndexRoute
   '/farmer/': typeof FarmerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/farmer'
+    | '/admin/applications'
+    | '/admin/grievances'
     | '/farmer/apply'
     | '/farmer/grievance'
+    | '/admin/'
     | '/farmer/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/farmer/apply' | '/farmer/grievance' | '/farmer'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin/applications'
+    | '/admin/grievances'
+    | '/farmer/apply'
+    | '/farmer/grievance'
+    | '/admin'
+    | '/farmer'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/farmer'
+    | '/admin/applications'
+    | '/admin/grievances'
     | '/farmer/apply'
     | '/farmer/grievance'
+    | '/admin/'
     | '/farmer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   FarmerRoute: typeof FarmerRouteWithChildren
 }
@@ -114,6 +166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -127,6 +186,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/farmer/'
       preLoaderRoute: typeof FarmerIndexRouteImport
       parentRoute: typeof FarmerRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/farmer/grievance': {
       id: '/farmer/grievance'
@@ -142,8 +208,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FarmerApplyRouteImport
       parentRoute: typeof FarmerRoute
     }
+    '/admin/grievances': {
+      id: '/admin/grievances'
+      path: '/grievances'
+      fullPath: '/admin/grievances'
+      preLoaderRoute: typeof AdminGrievancesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/applications': {
+      id: '/admin/applications'
+      path: '/applications'
+      fullPath: '/admin/applications'
+      preLoaderRoute: typeof AdminApplicationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminApplicationsRoute: typeof AdminApplicationsRoute
+  AdminGrievancesRoute: typeof AdminGrievancesRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminApplicationsRoute: AdminApplicationsRoute,
+  AdminGrievancesRoute: AdminGrievancesRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface FarmerRouteChildren {
   FarmerApplyRoute: typeof FarmerApplyRoute
@@ -162,9 +256,19 @@ const FarmerRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   FarmerRoute: FarmerRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
