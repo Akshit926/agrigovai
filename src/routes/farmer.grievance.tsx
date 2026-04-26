@@ -41,13 +41,13 @@ function GrievancePage() {
     }
     setBusy(true);
     const cls = classifyGrievance(`${parsed.data.subject} ${parsed.data.description}`);
-    const { error } = await supabase.from("grievances").insert({
+    const { error } = await supabase.from("grievances").insert([{
       farmer_id: user.id,
       subject: parsed.data.subject,
       description: parsed.data.description,
       ai_category: cls.category,
       priority: cls.priority,
-    });
+    }]);
     setBusy(false);
     if (error) {
       toast.error(error.message);
