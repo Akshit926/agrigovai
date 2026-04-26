@@ -89,7 +89,7 @@ function ApplyPage() {
 
     const score = priorityScore(parsed.data.area_acres, completeness.score, fraud.riskScore);
 
-    const { error } = await supabase.from("applications").insert({
+    const { error } = await supabase.from("applications").insert([{
       farmer_id: user.id,
       scheme_id: selected.id,
       land_id: parsed.data.land_id,
@@ -101,7 +101,7 @@ function ApplyPage() {
       priority_score: Math.round(score),
       ai_completeness: completeness as unknown as Record<string, unknown>,
       ai_fraud: fraud as unknown as Record<string, unknown>,
-    });
+    }]);
     setBusy(false);
     if (error) {
       toast.error(error.message);
