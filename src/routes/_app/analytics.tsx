@@ -59,10 +59,10 @@ function AnalyticsPage() {
   const ym = ys.reduce((a, b) => a + b) / n;
   const slope = xs.reduce((s, x, i) => s + (x - xm) * (ys[i] - ym), 0) / xs.reduce((s, x) => s + (x - xm) ** 2, 0);
   const intercept = ym - slope * xm;
-  const forecast = [...last14.map((d) => ({ date: d.date, actual: d.submitted, forecast: null as number | null }))];
+  const forecast: { date: string; actual: number | null; forecast: number | null }[] = last14.map((d) => ({ date: d.date, actual: d.submitted, forecast: null }));
   for (let i = 1; i <= 7; i++) {
     const d = new Date(); d.setDate(d.getDate() + i);
-    forecast.push({ date: d.toISOString().slice(5, 10), actual: null as number | null, forecast: Math.max(0, Math.round(intercept + slope * (n - 1 + i))) });
+    forecast.push({ date: d.toISOString().slice(5, 10), actual: null, forecast: Math.max(0, Math.round(intercept + slope * (n - 1 + i))) });
   }
 
   const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
