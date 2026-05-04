@@ -3,8 +3,9 @@ import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   component: () => {
-    const { user, loading } = useAuth();
+    const { user, role, loading } = useAuth();
     if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
-    return <Navigate to={user ? "/dashboard" : "/login"} />;
+    if (!user) return <Navigate to="/login" />;
+    return <Navigate to={role === "farmer" ? "/farmer" : "/dashboard"} />;
   },
 });
