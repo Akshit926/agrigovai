@@ -3,7 +3,7 @@ import { LayoutDashboard, FilePlus2, MessageSquarePlus, History, Sprout, LogOut,
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_farmer")({
+export const Route = createFileRoute("/farmer")({
   component: FarmerLayout,
 });
 

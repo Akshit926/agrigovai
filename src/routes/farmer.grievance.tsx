@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { classifyGrievance } from "@/lib/ai-rules";
-import { PriorityBadge } from "./index";
+import { PriorityBadge } from "./farmer.index";
 
-export const Route = createFileRoute("/_farmer/grievance")({
+export const Route = createFileRoute("/farmer/grievance")({
   component: GrievancePage,
 });
 

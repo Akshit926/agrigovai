@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { checkCompleteness, detectFraud, priorityScore } from "@/lib/ai-rules";
 
-export const Route = createFileRoute("/_farmer/apply")({
+export const Route = createFileRoute("/farmer/apply")({
   component: ApplyPage,
 });
 
