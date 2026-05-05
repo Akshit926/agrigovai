@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { FilePlus2, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { StatusBadge } from "./index";
+import { StatusBadge } from "./farmer.index";
 
-export const Route = createFileRoute("/_farmer/farmer/applications")({
+export const Route = createFileRoute("/farmer/applications")({
   component: MyApplications,
 });
 
