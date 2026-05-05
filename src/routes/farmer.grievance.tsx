@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { classifyGrievance } from "@/lib/ai-rules";
 import { PriorityBadge } from "./index";
 
-export const Route = createFileRoute("/_farmer/grievance")({
+export const Route = createFileRoute("/farmer/grievance")({
   component: GrievancePage,
 });
 
