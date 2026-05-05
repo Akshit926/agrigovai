@@ -4,7 +4,7 @@ import { FileText, MessageSquare, CheckCircle2, Clock, ShieldAlert, AlertTriangl
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/_farmer/")({
+export const Route = createFileRoute("/_farmer/farmer/")({
   component: FarmerHome,
 });
 

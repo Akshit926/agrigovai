@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { StatusBadge } from "./index";
 
-export const Route = createFileRoute("/_farmer/applications")({
+export const Route = createFileRoute("/_farmer/farmer/applications")({
   component: MyApplications,
 });
 
