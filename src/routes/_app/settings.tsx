@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, Shield, Cpu, Database, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Bell, Shield, Cpu, Database, User, Save } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "./dashboard";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -10,6 +16,33 @@ export const Route = createFileRoute("/_app/settings")({
 
 function SettingsPage() {
   const { user } = useAuth();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [district, setDistrict] = useState("");
+  const [state, setState] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("full_name, phone, district, state").eq("id", user.id).maybeSingle().then(({ data }) => {
+      setName(data?.full_name ?? "Officer Admin");
+      setPhone(data?.phone ?? "");
+      setDistrict(data?.district ?? "");
+      setState(data?.state ?? "");
+    });
+  }, [user]);
+
+  const save = async () => {
+    if (!user) return;
+    setBusy(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id, full_name: name, phone, district, state,
+    });
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Profile updated");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,16 +54,20 @@ function SettingsPage() {
         <Card title="Profile">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-primary"><User className="h-5 w-5" /></div>
-            <div>
-              <div className="font-semibold text-foreground">Officer Admin</div>
-              <div className="text-xs text-muted-foreground">{user?.email}</div>
+            <div className="min-w-0">
+              <div className="truncate font-semibold text-foreground">{name || "Officer"}</div>
+              <div className="truncate text-xs text-muted-foreground">{user?.email}</div>
             </div>
           </div>
-          <div className="mt-4 space-y-2 text-sm">
-            <Row label="Role" value="District Agriculture Officer" />
-            <Row label="Department" value="Maharashtra Agri Dept." />
-            <Row label="Last login" value={new Date().toLocaleString()} />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Field label="Full name" value={name} onChange={setName} />
+            <Field label="Phone" value={phone} onChange={setPhone} />
+            <Field label="District" value={district} onChange={setDistrict} />
+            <Field label="State" value={state} onChange={setState} />
           </div>
+          <Button onClick={save} disabled={busy} className="mt-4 w-full gap-2 sm:w-auto">
+            <Save className="h-4 w-4" /> {busy ? "Saving…" : "Save profile"}
+          </Button>
         </Card>
 
         <Card title="Notifications">
@@ -63,11 +100,11 @@ function SettingsPage() {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="flex items-center justify-between border-b border-border/50 py-1.5 last:border-0">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-foreground">{value}</span>
+    <div className="space-y-1.5">
+      <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</Label>
+      <Input value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
