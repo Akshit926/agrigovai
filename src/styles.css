@@ -110,3 +110,10 @@
   }
   h1, h2, h3, h4 { letter-spacing: -0.02em; }
 }
+
+@media print {
+  aside, header.sticky { display: none !important; }
+  main { padding: 0 !important; }
+  body { background: white !important; }
+  .shadow-\[var\(--shadow-card\)\], .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+}
