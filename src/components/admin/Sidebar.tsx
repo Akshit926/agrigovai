@@ -28,7 +28,7 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-1 p-3">
         {items.map((it) => {
-          const active = path === it.to || (it.to !== "/dashboard" && path.startsWith(it.to));
+          const active = path === it.to;
           const Icon = it.icon;
           return (
             <Link
