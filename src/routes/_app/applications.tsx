@@ -33,7 +33,7 @@ const FILTERS = [
 
 function ApplicationsPage() {
   const [apps, setApps] = useState<AppFull[]>([]);
-  const [filter, setFilter] = useState("needs_action");
+  const [filter, setFilter] = useState("all");
   const [open, setOpen] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [q, setQ] = useState("");
