@@ -15,6 +15,7 @@ export const Route = createFileRoute("/_app/applications")({
 interface AppFull {
   id: string; status: string; crop: string; area_acres: number; land_id: string;
   season: string | null; priority_score: number; submitted_documents: string[];
+  document_urls: Record<string, string> | null;
   ai_completeness: { complete?: boolean; missing?: string[]; score?: number } | null;
   ai_fraud: { flagged?: boolean; reasons?: string[]; riskScore?: number } | null;
   admin_notes: string | null; created_at: string;
@@ -139,6 +140,25 @@ function ApplicationsPage() {
                       ) : <div className="text-xs text-success">No anomalies detected.</div>}
                     </AIBlock>
                   </div>
+
+                  {a.document_urls && Object.keys(a.document_urls).length > 0 && (
+                    <div>
+                      <div className="text-xs font-medium text-muted-foreground">Uploaded documents</div>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {Object.entries(a.document_urls).map(([name, path]) => (
+                          <button key={name} type="button"
+                            onClick={async () => {
+                              const { data } = await supabase.storage.from("farmer-documents").createSignedUrl(path, 300);
+                              if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                              else toast.error("Could not open document");
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs hover:bg-secondary">
+                            <FileText className="h-3.5 w-3.5" /> {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <div className="text-xs font-medium text-muted-foreground">Officer notes</div>

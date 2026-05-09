@@ -26,6 +26,7 @@ function ApplyPage() {
   const [landId, setLandId] = useState("");
   const [area, setArea] = useState<string>("");
   const [docs, setDocs] = useState<Set<string>>(new Set());
+  const [files, setFiles] = useState<Record<string, File>>({});
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -55,6 +56,16 @@ function ApplyPage() {
     const status = fraud.flagged ? "fraud_flagged" : !comp.complete ? "docs_incomplete" : "submitted";
     const score = Math.round(priorityScore(areaNum, comp.score, fraud.riskScore));
 
+    // Upload selected files to storage
+    const document_urls: Record<string, string> = {};
+    for (const [doc, file] of Object.entries(files)) {
+      const safe = doc.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const path = `${user.id}/${Date.now()}-${safe}-${file.name}`;
+      const up = await supabase.storage.from("farmer-documents").upload(path, file, { upsert: false });
+      if (up.error) { toast.error(`Upload failed: ${up.error.message}`); setBusy(false); return; }
+      document_urls[doc] = up.data.path;
+    }
+
     const { error } = await supabase.from("applications").insert({
       farmer_id: user.id,
       scheme_id: scheme.id,
@@ -63,6 +74,7 @@ function ApplyPage() {
       season,
       area_acres: areaNum,
       submitted_documents: Array.from(docs),
+      document_urls: document_urls as never,
       status: status as never,
       priority_score: score,
       ai_completeness: comp as never,
@@ -110,17 +122,36 @@ function ApplyPage() {
 
         {scheme && (
           <div className="space-y-2">
-            <Label>Documents submitted</Label>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <Label>Required documents — upload each file</Label>
+            <p className="text-[11px] text-muted-foreground">Accepted: PDF, JPG, PNG · Max 10 MB each. Tick the box and attach the file.</p>
+            <div className="grid gap-2">
               {scheme.required_documents.map((d) => {
                 const checked = docs.has(d);
+                const file = files[d];
                 return (
-                  <label key={d} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 text-sm transition ${checked ? "border-primary bg-primary-soft" : "border-border bg-background hover:bg-secondary"}`}>
-                    <input type="checkbox" checked={checked} onChange={(e) => {
-                      const n = new Set(docs); e.target.checked ? n.add(d) : n.delete(d); setDocs(n);
-                    }} className="h-4 w-4 accent-current" />
-                    <span>{d}</span>
-                  </label>
+                  <div key={d} className={`rounded-lg border p-3 text-sm transition ${checked ? "border-primary bg-primary-soft" : "border-border bg-background"}`}>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" checked={checked} onChange={(e) => {
+                        const n = new Set(docs); e.target.checked ? n.add(d) : n.delete(d); setDocs(n);
+                        if (!e.target.checked) { const f = { ...files }; delete f[d]; setFiles(f); }
+                      }} className="h-4 w-4 accent-current" />
+                      <span className="font-medium">{d}</span>
+                      {file && <span className="ml-auto text-[11px] text-success">✓ {file.name}</span>}
+                    </div>
+                    {checked && (
+                      <input
+                        type="file"
+                        accept=".pdf,image/png,image/jpeg"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          if (f.size > 10 * 1024 * 1024) { toast.error("File too large (max 10 MB)"); return; }
+                          setFiles({ ...files, [d]: f });
+                        }}
+                        className="mt-2 block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
+                      />
+                    )}
+                  </div>
                 );
               })}
             </div>
