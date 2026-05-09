@@ -25,13 +25,6 @@ function FarmerLayout() {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      {/* GovTech header */}
-      <div className="border-b-2 border-primary bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-[11px]">
-          <span className="opacity-90">भारत सरकार · Government of India</span>
-          <span className="opacity-90">Department of Agriculture & Farmers Welfare</span>
-        </div>
-      </div>
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
           <Link to="/farmer" className="flex items-center gap-2.5">
