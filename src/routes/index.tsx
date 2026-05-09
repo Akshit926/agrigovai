@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Sprout, ShieldCheck, Brain, Satellite, FileCheck2, MessageSquare, BarChart3,
-  ArrowRight, CheckCircle2, Users, Building2, Phone, Mail, MapPin, Globe,
+  ArrowRight, CheckCircle2, Users, Building2, Phone, Mail, MapPin,
   Sparkles, TrendingUp, Activity, FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -26,19 +26,6 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* GOI utility bar */}
-      <div className="bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1.5 text-[11px]">
-          <span className="opacity-90">भारत सरकार · Government of India</span>
-          <div className="hidden items-center gap-4 sm:flex opacity-90">
-            <span className="inline-flex items-center gap-1"><Globe className="h-3 w-3" /> English</span>
-            <span>Skip to main content</span>
-            <span>Screen reader access</span>
-            <span>A- A A+</span>
-          </div>
-        </div>
-      </div>
-
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">

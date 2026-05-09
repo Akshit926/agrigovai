@@ -30,8 +30,7 @@ export function Topbar() {
   const [openNotif, setOpenNotif] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    (async () => {
+  const loadNotifs = async () => {
       const [a, g] = await Promise.all([
         supabase
           .from("applications")
@@ -61,7 +60,15 @@ export function Topbar() {
         list.push({ type: "grievance", id: r.id, title: r.subject, meta: `High priority · ${r.profile?.full_name ?? ""}`, href: "/grievances" });
       });
       setNotifs(list);
-    })();
+  };
+  useEffect(() => {
+    loadNotifs();
+    const ch = supabase
+      .channel("topbar-alerts")
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, () => loadNotifs())
+      .on("postgres_changes", { event: "*", schema: "public", table: "grievances" }, () => loadNotifs())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   useEffect(() => {

@@ -45,7 +45,17 @@ function ApplicationsPage() {
       .order("priority_score", { ascending: false }).order("created_at", { ascending: false });
     setApps((data ?? []) as unknown as AppFull[]);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const ch = supabase
+      .channel("admin-applications")
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, (payload) => {
+        load();
+        if (payload.eventType === "INSERT") toast.info("New application received");
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
 
   const filtered = apps.filter((a) => {
     if (q && !(`${a.profile?.full_name} ${a.scheme?.name} ${a.crop} ${a.land_id}`.toLowerCase().includes(q.toLowerCase()))) return false;
