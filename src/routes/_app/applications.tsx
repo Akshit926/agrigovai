@@ -15,6 +15,7 @@ export const Route = createFileRoute("/_app/applications")({
 interface AppFull {
   id: string; status: string; crop: string; area_acres: number; land_id: string;
   season: string | null; priority_score: number; submitted_documents: string[];
+  document_urls: Record<string, string> | null;
   ai_completeness: { complete?: boolean; missing?: string[]; score?: number } | null;
   ai_fraud: { flagged?: boolean; reasons?: string[]; riskScore?: number } | null;
   admin_notes: string | null; created_at: string;
