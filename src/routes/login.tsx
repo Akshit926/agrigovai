@@ -20,7 +20,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("officer");
   const [tab, setTab] = useState<Tab>("signin");
-  const [email, setEmail] = useState("admin@agrigov.ai");
+  const [email, setEmail] = useState("admin@gmail.com");
   const [password, setPassword] = useState("admin123");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
