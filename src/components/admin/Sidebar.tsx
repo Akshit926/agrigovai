@@ -1,9 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, FileText, ShieldAlert, Satellite, MessageSquare, BarChart3, FileBarChart, Settings, Sprout } from "lucide-react";
+import { LayoutDashboard, FileText, ShieldAlert, Satellite, MessageSquare, BarChart3, FileBarChart, Settings, Sprout, Wheat } from "lucide-react";
 
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/applications", label: "Applications", icon: FileText },
+  { to: "/schemes", label: "Schemes", icon: Wheat },
   { to: "/fraud", label: "Fraud Detection", icon: ShieldAlert },
   { to: "/field-verification", label: "Field Verification", icon: Satellite },
   { to: "/grievances", label: "Grievances", icon: MessageSquare },
