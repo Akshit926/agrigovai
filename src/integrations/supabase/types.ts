@@ -22,6 +22,7 @@ export type Database = {
           area_acres: number
           created_at: string
           crop: string
+          document_urls: Json
           farmer_id: string
           id: string
           land_id: string
@@ -39,6 +40,7 @@ export type Database = {
           area_acres: number
           created_at?: string
           crop: string
+          document_urls?: Json
           farmer_id: string
           id?: string
           land_id: string
@@ -56,6 +58,7 @@ export type Database = {
           area_acres?: number
           created_at?: string
           crop?: string
+          document_urls?: Json
           farmer_id?: string
           id?: string
           land_id?: string
