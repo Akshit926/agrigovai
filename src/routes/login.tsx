@@ -33,7 +33,7 @@ function LoginPage() {
   const switchMode = (m: Mode) => {
     setMode(m);
     setTab("signin");
-    if (m === "officer") { setEmail("admin@agrigov.ai"); setPassword("admin123"); }
+    if (m === "officer") { setEmail("admin@gmail.com"); setPassword("admin123"); }
     else { setEmail(""); setPassword(""); }
   };
 
