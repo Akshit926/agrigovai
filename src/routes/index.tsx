@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Sprout, ShieldCheck, Brain, Satellite, FileCheck2, MessageSquare, BarChart3,
-  ArrowRight, CheckCircle2, Users, Building2, Phone, Mail, MapPin, Globe,
+  ArrowRight, CheckCircle2, Users, Building2, Phone, Mail, MapPin,
   Sparkles, TrendingUp, Activity, FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
