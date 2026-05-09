@@ -56,6 +56,16 @@ function ApplyPage() {
     const status = fraud.flagged ? "fraud_flagged" : !comp.complete ? "docs_incomplete" : "submitted";
     const score = Math.round(priorityScore(areaNum, comp.score, fraud.riskScore));
 
+    // Upload selected files to storage
+    const document_urls: Record<string, string> = {};
+    for (const [doc, file] of Object.entries(files)) {
+      const safe = doc.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const path = `${user.id}/${Date.now()}-${safe}-${file.name}`;
+      const up = await supabase.storage.from("farmer-documents").upload(path, file, { upsert: false });
+      if (up.error) { toast.error(`Upload failed: ${up.error.message}`); setBusy(false); return; }
+      document_urls[doc] = up.data.path;
+    }
+
     const { error } = await supabase.from("applications").insert({
       farmer_id: user.id,
       scheme_id: scheme.id,
@@ -64,6 +74,7 @@ function ApplyPage() {
       season,
       area_acres: areaNum,
       submitted_documents: Array.from(docs),
+      document_urls: document_urls as never,
       status: status as never,
       priority_score: score,
       ai_completeness: comp as never,
