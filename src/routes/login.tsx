@@ -20,7 +20,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("officer");
   const [tab, setTab] = useState<Tab>("signin");
-  const [email, setEmail] = useState("admin@agrigov.ai");
+  const [email, setEmail] = useState("admin@gmail.com");
   const [password, setPassword] = useState("admin123");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -33,7 +33,7 @@ function LoginPage() {
   const switchMode = (m: Mode) => {
     setMode(m);
     setTab("signin");
-    if (m === "officer") { setEmail("admin@agrigov.ai"); setPassword("admin123"); }
+    if (m === "officer") { setEmail("admin@gmail.com"); setPassword("admin123"); }
     else { setEmail(""); setPassword(""); }
   };
 
