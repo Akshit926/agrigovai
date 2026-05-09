@@ -18,6 +18,7 @@ import { Route as FarmerGrievanceRouteImport } from './routes/farmer.grievance'
 import { Route as FarmerApplyRouteImport } from './routes/farmer.apply'
 import { Route as FarmerApplicationsRouteImport } from './routes/farmer.applications'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppSchemesRouteImport } from './routes/_app/schemes'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppGrievancesRouteImport } from './routes/_app/grievances'
 import { Route as AppFraudRouteImport } from './routes/_app/fraud'
@@ -70,6 +71,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSchemesRoute = AppSchemesRouteImport.update({
+  id: '/schemes',
+  path: '/schemes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/fraud': typeof AppFraudRoute
   '/grievances': typeof AppGrievancesRoute
   '/reports': typeof AppReportsRoute
+  '/schemes': typeof AppSchemesRoute
   '/settings': typeof AppSettingsRoute
   '/farmer/applications': typeof FarmerApplicationsRoute
   '/farmer/apply': typeof FarmerApplyRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/fraud': typeof AppFraudRoute
   '/grievances': typeof AppGrievancesRoute
   '/reports': typeof AppReportsRoute
+  '/schemes': typeof AppSchemesRoute
   '/settings': typeof AppSettingsRoute
   '/farmer/applications': typeof FarmerApplicationsRoute
   '/farmer/apply': typeof FarmerApplyRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_app/fraud': typeof AppFraudRoute
   '/_app/grievances': typeof AppGrievancesRoute
   '/_app/reports': typeof AppReportsRoute
+  '/_app/schemes': typeof AppSchemesRoute
   '/_app/settings': typeof AppSettingsRoute
   '/farmer/applications': typeof FarmerApplicationsRoute
   '/farmer/apply': typeof FarmerApplyRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/fraud'
     | '/grievances'
     | '/reports'
+    | '/schemes'
     | '/settings'
     | '/farmer/applications'
     | '/farmer/apply'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/fraud'
     | '/grievances'
     | '/reports'
+    | '/schemes'
     | '/settings'
     | '/farmer/applications'
     | '/farmer/apply'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/_app/fraud'
     | '/_app/grievances'
     | '/_app/reports'
+    | '/_app/schemes'
     | '/_app/settings'
     | '/farmer/applications'
     | '/farmer/apply'
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/schemes': {
+      id: '/_app/schemes'
+      path: '/schemes'
+      fullPath: '/schemes'
+      preLoaderRoute: typeof AppSchemesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/reports': {
       id: '/_app/reports'
       path: '/reports'
@@ -344,6 +363,7 @@ interface AppRouteChildren {
   AppFraudRoute: typeof AppFraudRoute
   AppGrievancesRoute: typeof AppGrievancesRoute
   AppReportsRoute: typeof AppReportsRoute
+  AppSchemesRoute: typeof AppSchemesRoute
   AppSettingsRoute: typeof AppSettingsRoute
 }
 
@@ -355,6 +375,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFraudRoute: AppFraudRoute,
   AppGrievancesRoute: AppGrievancesRoute,
   AppReportsRoute: AppReportsRoute,
+  AppSchemesRoute: AppSchemesRoute,
   AppSettingsRoute: AppSettingsRoute,
 }
 
