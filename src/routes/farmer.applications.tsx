@@ -23,11 +23,17 @@ function MyApplications() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("applications")
+    const load = () => supabase.from("applications")
       .select("*, scheme:schemes(name, code)")
       .eq("farmer_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => setRows((data ?? []) as unknown as Row[]));
+    load();
+    const ch = supabase
+      .channel("farmer-apps-" + user.id)
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications", filter: `farmer_id=eq.${user.id}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [user]);
 
   return (
