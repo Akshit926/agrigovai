@@ -57,8 +57,13 @@ function LoginPage() {
       return;
     }
 
+    if (mode === "officer" && email.trim().toLowerCase() !== "admin@gmail.com") {
+      setBusy(false);
+      toast.error("Only the official admin account can sign in here.");
+      return;
+    }
     let res = await supabase.auth.signInWithPassword({ email, password });
-    if (res.error && mode === "officer" && res.error.message.toLowerCase().includes("invalid")) {
+    if (res.error && mode === "officer" && email.trim().toLowerCase() === "admin@gmail.com" && res.error.message.toLowerCase().includes("invalid")) {
       const su = await supabase.auth.signUp({
         email, password,
         options: { emailRedirectTo: window.location.origin, data: { full_name: "Officer Admin", role: "admin" } },
