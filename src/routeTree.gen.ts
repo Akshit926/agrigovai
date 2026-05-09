@@ -19,6 +19,7 @@ import { Route as FarmerApplyRouteImport } from './routes/farmer.apply'
 import { Route as FarmerApplicationsRouteImport } from './routes/farmer.applications'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSchemesRouteImport } from './routes/_app/schemes'
+import { Route as AppSchemesRouteImport } from './routes/_app/schemes'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppGrievancesRouteImport } from './routes/_app/grievances'
 import { Route as AppFraudRouteImport } from './routes/_app/fraud'
@@ -69,6 +70,11 @@ const FarmerApplicationsRoute = FarmerApplicationsRouteImport.update({
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSchemesRoute = AppSchemesRouteImport.update({
+  id: '/schemes',
+  path: '/schemes',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSchemesRoute = AppSchemesRouteImport.update({
