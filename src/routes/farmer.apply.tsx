@@ -26,6 +26,7 @@ function ApplyPage() {
   const [landId, setLandId] = useState("");
   const [area, setArea] = useState<string>("");
   const [docs, setDocs] = useState<Set<string>>(new Set());
+  const [files, setFiles] = useState<Record<string, File>>({});
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
