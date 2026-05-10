@@ -16,6 +16,9 @@ export const Route = createFileRoute("/farmer/apply")({
 
 interface Scheme { id: string; name: string; code: string; description: string; required_documents: string[]; max_amount: number | null; category: string }
 
+const ALLOWED_FILE_TYPES = ["application/pdf", "image/png", "image/jpeg"];
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 function ApplyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -25,7 +28,6 @@ function ApplyPage() {
   const [season, setSeason] = useState("Kharif");
   const [landId, setLandId] = useState("");
   const [area, setArea] = useState<string>("");
-  const [docs, setDocs] = useState<Set<string>>(new Set());
   const [files, setFiles] = useState<Record<string, File>>({});
   const [busy, setBusy] = useState(false);
 
@@ -34,13 +36,30 @@ function ApplyPage() {
   }, []);
 
   const scheme = schemes.find((s) => s.id === schemeId);
-  const completeness = useMemo(() => scheme ? checkCompleteness(scheme.required_documents, Array.from(docs)) : null, [scheme, docs]);
+  const uploadedDocs = useMemo(() => scheme ? scheme.required_documents.filter((doc) => files[doc]) : [], [scheme, files]);
+  const completeness = useMemo(() => scheme ? checkCompleteness(scheme.required_documents, uploadedDocs) : null, [scheme, uploadedDocs]);
+
+  useEffect(() => {
+    setFiles({});
+  }, [schemeId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !scheme) return;
+    const cropValue = crop.trim();
+    const landValue = landId.trim().toUpperCase();
+    const areaNum = Number(area);
+    if (scheme.required_documents.length === 0) { toast.error("This scheme has no required documents configured. Contact admin."); return; }
+    const missingFiles = scheme.required_documents.filter((doc) => !files[doc]);
+    if (!/^[\p{L}][\p{L}\s-]{1,59}$/u.test(cropValue)) { toast.error("Enter a valid crop name."); return; }
+    if (!/^[A-Z0-9][A-Z0-9/.-]{3,39}$/.test(landValue)) { toast.error("Enter a valid land/survey number."); return; }
+    if (!Number.isFinite(areaNum) || areaNum < 0.1 || areaNum > 100) { toast.error("Area must be between 0.1 and 100 acres."); return; }
+    if (missingFiles.length > 0) { toast.error(`Upload all required documents: ${missingFiles.join(", ")}`); return; }
+    for (const file of Object.values(files)) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) { toast.error("Only PDF, JPG, and PNG documents are allowed."); return; }
+      if (file.size > MAX_FILE_SIZE) { toast.error("Each document must be 10 MB or smaller."); return; }
+    }
     setBusy(true);
-    const areaNum = parseFloat(area || "0");
 
     // Fetch prior apps for fraud detection (own + same land in same scheme — RLS may limit but we use what we can)
     const { data: prior } = await supabase
@@ -49,18 +68,20 @@ function ApplyPage() {
       .eq("scheme_id", scheme.id);
 
     const fraud = detectFraud(
-      { land_id: landId, scheme_id: scheme.id, area_acres: areaNum, farmer_id: user.id },
+      { land_id: landValue, scheme_id: scheme.id, area_acres: areaNum, farmer_id: user.id },
       (prior ?? []) as never,
     );
-    const comp = checkCompleteness(scheme.required_documents, Array.from(docs));
-    const status = fraud.flagged ? "fraud_flagged" : !comp.complete ? "docs_incomplete" : "submitted";
+    const comp = checkCompleteness(scheme.required_documents, uploadedDocs);
+    const status = fraud.flagged ? "fraud_flagged" : "submitted";
     const score = Math.round(priorityScore(areaNum, comp.score, fraud.riskScore));
 
     // Upload selected files to storage
     const document_urls: Record<string, string> = {};
-    for (const [doc, file] of Object.entries(files)) {
+    for (const doc of scheme.required_documents) {
+      const file = files[doc];
       const safe = doc.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      const path = `${user.id}/${Date.now()}-${safe}-${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+      const path = `${user.id}/${Date.now()}-${safe}-${safeName}`;
       const up = await supabase.storage.from("farmer-documents").upload(path, file, { upsert: false });
       if (up.error) { toast.error(`Upload failed: ${up.error.message}`); setBusy(false); return; }
       document_urls[doc] = up.data.path;
@@ -69,11 +90,11 @@ function ApplyPage() {
     const { error } = await supabase.from("applications").insert({
       farmer_id: user.id,
       scheme_id: scheme.id,
-      land_id: landId,
-      crop,
+      land_id: landValue,
+      crop: cropValue,
       season,
       area_acres: areaNum,
-      submitted_documents: Array.from(docs),
+      submitted_documents: uploadedDocs,
       document_urls: document_urls as never,
       status: status as never,
       priority_score: score,
@@ -123,34 +144,33 @@ function ApplyPage() {
         {scheme && (
           <div className="space-y-2">
             <Label>Required documents — upload each file</Label>
-            <p className="text-[11px] text-muted-foreground">Accepted: PDF, JPG, PNG · Max 10 MB each. Tick the box and attach the file.</p>
+            <p className="text-[11px] text-muted-foreground">Accepted: PDF, JPG, PNG · Max 10 MB each. Every document is compulsory.</p>
+            {scheme.required_documents.length === 0 && (
+              <div className="rounded-lg bg-warning/10 p-2.5 text-xs text-warning">Admin must add required documents before farmers can apply for this scheme.</div>
+            )}
             <div className="grid gap-2">
               {scheme.required_documents.map((d) => {
-                const checked = docs.has(d);
                 const file = files[d];
                 return (
-                  <div key={d} className={`rounded-lg border p-3 text-sm transition ${checked ? "border-primary bg-primary-soft" : "border-border bg-background"}`}>
+                  <div key={d} className={`rounded-lg border p-3 text-sm transition ${file ? "border-primary bg-primary-soft" : "border-border bg-background"}`}>
                     <div className="flex items-center gap-2">
-                      <input type="checkbox" checked={checked} onChange={(e) => {
-                        const n = new Set(docs); e.target.checked ? n.add(d) : n.delete(d); setDocs(n);
-                        if (!e.target.checked) { const f = { ...files }; delete f[d]; setFiles(f); }
-                      }} className="h-4 w-4 accent-current" />
+                      <FileText className="h-4 w-4 text-primary" />
                       <span className="font-medium">{d}</span>
                       {file && <span className="ml-auto text-[11px] text-success">✓ {file.name}</span>}
                     </div>
-                    {checked && (
-                      <input
-                        type="file"
-                        accept=".pdf,image/png,image/jpeg"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (!f) return;
-                          if (f.size > 10 * 1024 * 1024) { toast.error("File too large (max 10 MB)"); return; }
-                          setFiles({ ...files, [d]: f });
-                        }}
-                        className="mt-2 block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
-                      />
-                    )}
+                    <input
+                      type="file"
+                      required
+                      accept=".pdf,image/png,image/jpeg"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) { const next = { ...files }; delete next[d]; setFiles(next); return; }
+                        if (!ALLOWED_FILE_TYPES.includes(f.type)) { toast.error("Only PDF, JPG, and PNG documents are allowed"); e.currentTarget.value = ""; return; }
+                        if (f.size > MAX_FILE_SIZE) { toast.error("File too large (max 10 MB)"); e.currentTarget.value = ""; return; }
+                        setFiles({ ...files, [d]: f });
+                      }}
+                      className="mt-2 block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
+                    />
                   </div>
                 );
               })}
