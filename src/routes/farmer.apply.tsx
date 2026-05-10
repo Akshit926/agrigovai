@@ -49,6 +49,7 @@ function ApplyPage() {
     const cropValue = crop.trim();
     const landValue = landId.trim().toUpperCase();
     const areaNum = Number(area);
+    if (scheme.required_documents.length === 0) { toast.error("This scheme has no required documents configured. Contact admin."); return; }
     const missingFiles = scheme.required_documents.filter((doc) => !files[doc]);
     if (!/^[\p{L}][\p{L}\s-]{1,59}$/u.test(cropValue)) { toast.error("Enter a valid crop name."); return; }
     if (!/^[A-Z0-9][A-Z0-9/.-]{3,39}$/.test(landValue)) { toast.error("Enter a valid land/survey number."); return; }
@@ -144,6 +145,9 @@ function ApplyPage() {
           <div className="space-y-2">
             <Label>Required documents — upload each file</Label>
             <p className="text-[11px] text-muted-foreground">Accepted: PDF, JPG, PNG · Max 10 MB each. Every document is compulsory.</p>
+            {scheme.required_documents.length === 0 && (
+              <div className="rounded-lg bg-warning/10 p-2.5 text-xs text-warning">Admin must add required documents before farmers can apply for this scheme.</div>
+            )}
             <div className="grid gap-2">
               {scheme.required_documents.map((d) => {
                 const file = files[d];
