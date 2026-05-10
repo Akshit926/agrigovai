@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureCurrentUserRecord } from "@/lib/account.functions";
 
 type Role = "admin" | "farmer" | null;
 
@@ -18,12 +20,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<Role>(null);
   const [loading, setLoading] = useState(true);
+  const ensureUserRecord = useServerFn(ensureCurrentUserRecord);
 
   useEffect(() => {
     const fetchRole = async (uid: string | undefined) => {
       if (!uid) { setRole(null); return; }
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid).maybeSingle();
-      setRole((data?.role as Role) ?? "farmer");
+      if (data?.role) { setRole(data.role as Role); return; }
+      try {
+        const synced = await ensureUserRecord();
+        setRole((synced.role as Role) ?? "farmer");
+      } catch {
+        setRole("farmer");
+      }
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
@@ -36,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [ensureUserRecord]);
 
   return (
     <Ctx.Provider value={{
