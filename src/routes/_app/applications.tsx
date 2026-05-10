@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_app/applications")({
 });
 
 interface AppFull {
-  id: string; status: string; crop: string; area_acres: number; land_id: string;
+  id: string; farmer_id: string; status: string; crop: string; area_acres: number; land_id: string;
   season: string | null; priority_score: number; submitted_documents: string[];
   document_urls: Record<string, string> | null;
   ai_completeness: { complete?: boolean; missing?: string[]; score?: number } | null;
@@ -40,11 +40,19 @@ function ApplicationsPage() {
   const [q, setQ] = useState("");
 
   const load = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("applications")
-      .select("*, scheme:schemes(name, required_documents), profile:profiles!inner(full_name, phone, village, district)")
+      .select("*, scheme:schemes(name, required_documents)")
       .order("priority_score", { ascending: false }).order("created_at", { ascending: false });
-    setApps((data ?? []) as unknown as AppFull[]);
+    if (error) { toast.error(`Could not load applications: ${error.message}`); return; }
+    const rows = (data ?? []) as unknown as AppFull[];
+    const farmerIds = [...new Set(rows.map((a) => a.farmer_id).filter(Boolean))];
+    const profileMap = new Map<string, AppFull["profile"]>();
+    if (farmerIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name, phone, village, district").in("id", farmerIds);
+      (profiles ?? []).forEach((p) => profileMap.set(p.id, p));
+    }
+    setApps(rows.map((a) => ({ ...a, profile: profileMap.get(a.farmer_id) ?? null })));
   };
   useEffect(() => {
     load();
