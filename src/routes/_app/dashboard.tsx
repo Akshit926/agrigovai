@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 });
 
 interface AppRow {
-  id: string; status: string; crop: string; area_acres: number; priority_score: number;
+  id: string; farmer_id: string; status: string; crop: string; area_acres: number; priority_score: number;
   created_at: string; ai_fraud: { riskScore?: number; flagged?: boolean } | null;
   ai_completeness: { complete?: boolean; score?: number } | null;
   scheme: { name: string } | null;
@@ -23,14 +23,27 @@ function Dashboard() {
   const [griev, setGriev] = useState<GrievRow[]>([]);
 
   useEffect(() => {
-    (async () => {
+    const load = async () => {
       const [a, g] = await Promise.all([
-        supabase.from("applications").select("*, scheme:schemes(name), profile:profiles!inner(full_name, village)").order("created_at", { ascending: false }),
+        supabase.from("applications").select("*, scheme:schemes(name)").order("created_at", { ascending: false }),
         supabase.from("grievances").select("ai_category, priority, status, created_at"),
       ]);
-      setApps((a.data ?? []) as unknown as AppRow[]);
+      const rows = (a.data ?? []) as unknown as AppRow[];
+      const farmerIds = [...new Set(rows.map((app) => app.farmer_id).filter(Boolean))];
+      const profileMap = new Map<string, AppRow["profile"]>();
+      if (farmerIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles").select("id, full_name, village").in("id", farmerIds);
+        (profiles ?? []).forEach((p) => profileMap.set(p.id, p));
+      }
+      setApps(rows.map((app) => ({ ...app, profile: profileMap.get(app.farmer_id) ?? null })));
       setGriev((g.data ?? []) as GrievRow[]);
-    })();
+    };
+    load();
+    const ch = supabase
+      .channel("dashboard-applications")
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const total = apps.length;
