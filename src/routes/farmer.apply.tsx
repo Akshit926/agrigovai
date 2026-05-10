@@ -16,6 +16,9 @@ export const Route = createFileRoute("/farmer/apply")({
 
 interface Scheme { id: string; name: string; code: string; description: string; required_documents: string[]; max_amount: number | null; category: string }
 
+const ALLOWED_FILE_TYPES = ["application/pdf", "image/png", "image/jpeg"];
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 function ApplyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -25,7 +28,6 @@ function ApplyPage() {
   const [season, setSeason] = useState("Kharif");
   const [landId, setLandId] = useState("");
   const [area, setArea] = useState<string>("");
-  const [docs, setDocs] = useState<Set<string>>(new Set());
   const [files, setFiles] = useState<Record<string, File>>({});
   const [busy, setBusy] = useState(false);
 
@@ -34,7 +36,12 @@ function ApplyPage() {
   }, []);
 
   const scheme = schemes.find((s) => s.id === schemeId);
-  const completeness = useMemo(() => scheme ? checkCompleteness(scheme.required_documents, Array.from(docs)) : null, [scheme, docs]);
+  const uploadedDocs = useMemo(() => scheme ? scheme.required_documents.filter((doc) => files[doc]) : [], [scheme, files]);
+  const completeness = useMemo(() => scheme ? checkCompleteness(scheme.required_documents, uploadedDocs) : null, [scheme, uploadedDocs]);
+
+  useEffect(() => {
+    setFiles({});
+  }, [schemeId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
