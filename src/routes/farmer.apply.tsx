@@ -46,8 +46,19 @@ function ApplyPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !scheme) return;
+    const cropValue = crop.trim();
+    const landValue = landId.trim().toUpperCase();
+    const areaNum = Number(area);
+    const missingFiles = scheme.required_documents.filter((doc) => !files[doc]);
+    if (!/^[\p{L}][\p{L}\s-]{1,59}$/u.test(cropValue)) { toast.error("Enter a valid crop name."); return; }
+    if (!/^[A-Z0-9][A-Z0-9/.-]{3,39}$/.test(landValue)) { toast.error("Enter a valid land/survey number."); return; }
+    if (!Number.isFinite(areaNum) || areaNum < 0.1 || areaNum > 100) { toast.error("Area must be between 0.1 and 100 acres."); return; }
+    if (missingFiles.length > 0) { toast.error(`Upload all required documents: ${missingFiles.join(", ")}`); return; }
+    for (const file of Object.values(files)) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) { toast.error("Only PDF, JPG, and PNG documents are allowed."); return; }
+      if (file.size > MAX_FILE_SIZE) { toast.error("Each document must be 10 MB or smaller."); return; }
+    }
     setBusy(true);
-    const areaNum = parseFloat(area || "0");
 
     // Fetch prior apps for fraud detection (own + same land in same scheme — RLS may limit but we use what we can)
     const { data: prior } = await supabase
@@ -56,18 +67,20 @@ function ApplyPage() {
       .eq("scheme_id", scheme.id);
 
     const fraud = detectFraud(
-      { land_id: landId, scheme_id: scheme.id, area_acres: areaNum, farmer_id: user.id },
+      { land_id: landValue, scheme_id: scheme.id, area_acres: areaNum, farmer_id: user.id },
       (prior ?? []) as never,
     );
-    const comp = checkCompleteness(scheme.required_documents, Array.from(docs));
-    const status = fraud.flagged ? "fraud_flagged" : !comp.complete ? "docs_incomplete" : "submitted";
+    const comp = checkCompleteness(scheme.required_documents, uploadedDocs);
+    const status = fraud.flagged ? "fraud_flagged" : "submitted";
     const score = Math.round(priorityScore(areaNum, comp.score, fraud.riskScore));
 
     // Upload selected files to storage
     const document_urls: Record<string, string> = {};
-    for (const [doc, file] of Object.entries(files)) {
+    for (const doc of scheme.required_documents) {
+      const file = files[doc];
       const safe = doc.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      const path = `${user.id}/${Date.now()}-${safe}-${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+      const path = `${user.id}/${Date.now()}-${safe}-${safeName}`;
       const up = await supabase.storage.from("farmer-documents").upload(path, file, { upsert: false });
       if (up.error) { toast.error(`Upload failed: ${up.error.message}`); setBusy(false); return; }
       document_urls[doc] = up.data.path;
@@ -76,11 +89,11 @@ function ApplyPage() {
     const { error } = await supabase.from("applications").insert({
       farmer_id: user.id,
       scheme_id: scheme.id,
-      land_id: landId,
-      crop,
+      land_id: landValue,
+      crop: cropValue,
       season,
       area_acres: areaNum,
-      submitted_documents: Array.from(docs),
+      submitted_documents: uploadedDocs,
       document_urls: document_urls as never,
       status: status as never,
       priority_score: score,
