@@ -8,9 +8,11 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   if (!user) return <Navigate to="/login" />;
+  if (!role) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
+  if (role !== "admin") return <Navigate to="/farmer" />;
 
   return (
     <div className="flex min-h-screen w-full bg-background">
