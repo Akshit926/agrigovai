@@ -61,6 +61,7 @@ function SchemesAdmin() {
       max_amount: form.max_amount ? Number(form.max_amount) : null,
     };
     if (!payload.name || !payload.code || !payload.description) { toast.error("Fill name, code and description"); return; }
+    if (payload.required_documents.length === 0) { toast.error("Add at least one required document for this scheme"); return; }
     const { error } = editId
       ? await supabase.from("schemes").update(payload).eq("id", editId)
       : await supabase.from("schemes").insert({ ...payload, active: true });
@@ -137,7 +138,7 @@ function SchemesAdmin() {
               <div className="space-y-1.5"><Label>Code *</Label><Input required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="PMK-001" /></div>
               <div className="space-y-1.5"><Label>Category</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Subsidy / Insurance / Credit" /></div>
               <div className="space-y-1.5 sm:col-span-2"><Label>Description & benefits *</Label><Textarea required rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the scheme, eligibility and benefits" /></div>
-              <div className="space-y-1.5 sm:col-span-2"><Label>Required documents (comma-separated)</Label><Input value={form.required_documents} onChange={(e) => setForm({ ...form, required_documents: e.target.value })} placeholder="Aadhaar, Land Record, Bank Passbook" /></div>
+              <div className="space-y-1.5 sm:col-span-2"><Label>Required documents * (comma-separated)</Label><Input required value={form.required_documents} onChange={(e) => setForm({ ...form, required_documents: e.target.value })} placeholder="Aadhaar, Land Record, Bank Passbook" /></div>
               <div className="space-y-1.5"><Label>Max amount (₹)</Label><Input type="number" value={form.max_amount} onChange={(e) => setForm({ ...form, max_amount: e.target.value })} /></div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
