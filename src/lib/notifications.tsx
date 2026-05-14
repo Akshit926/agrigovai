@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { useAuth } from "@/lib/auth";
 
 export interface Notification {
   id: string;
