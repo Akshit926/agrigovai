@@ -3,10 +3,22 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Readable } from 'node:stream';
-import serverEntry from './dist/server/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDir = path.join(__dirname, 'dist', 'client');
+
+let serverEntry = null;
+let serverLoadError = null;
+
+// Dynamic import to catch module load failures gracefully
+try {
+  const mod = await import('./dist/server/index.js');
+  serverEntry = mod.default;
+  console.log('Server entry loaded successfully');
+} catch (err) {
+  serverLoadError = err;
+  console.error('Failed to load server entry:', err);
+}
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -62,11 +74,24 @@ async function handleRequest(req, res) {
   const url = new URL(req.url ?? '/', `http://${host}`);
   const pathname = decodeURIComponent(url.pathname);
 
+  // Health check endpoint for Cloud Run
+  if (pathname === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', serverLoaded: !!serverEntry, error: serverLoadError?.message }));
+    return;
+  }
+
   if (isStaticAsset(pathname)) {
     const assetPath = path.join(clientDir, pathname);
     if (assetPath.startsWith(clientDir) && (await serveStaticFile(req, res, assetPath))) {
       return;
     }
+  }
+
+  if (!serverEntry) {
+    res.writeHead(500, { 'Content-Type': 'text/html' });
+    res.end(`<html><body><h1>Server Error</h1><pre>${serverLoadError?.stack || 'Server entry failed to load'}</pre></body></html>`);
+    return;
   }
 
   try {
@@ -88,8 +113,8 @@ async function handleRequest(req, res) {
     }
   } catch (error) {
     console.error('Server error:', error);
-    res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Internal Server Error');
+    res.writeHead(500, { 'Content-Type': 'text/html' });
+    res.end(`<html><body><h1>Server Error</h1><pre>${error?.stack || error}</pre></body></html>`);
   }
 }
 
@@ -98,4 +123,7 @@ const server = http.createServer(handleRequest);
 
 server.listen(port, () => {
   console.log(`AgriGov AI server running on http://localhost:${port}`);
+  if (serverLoadError) {
+    console.error('WARNING: Server entry failed to load:', serverLoadError.message);
+  }
 });
