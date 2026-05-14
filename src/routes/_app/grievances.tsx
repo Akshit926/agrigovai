@@ -42,7 +42,7 @@ function GrievancesPage() {
   const load = async () => {
     const { data } = await supabase
       .from("grievances")
-      .select("*, profile:profiles!inner(full_name, phone, village, district)")
+      .select("*, profile:profiles(full_name, phone, village, district)")
       .order("created_at", { ascending: false });
     setItems((data ?? []) as unknown as Griev[]);
   };

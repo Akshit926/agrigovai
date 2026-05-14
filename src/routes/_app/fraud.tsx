@@ -32,7 +32,7 @@ function FraudPage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("applications")
-      .select("*, scheme:schemes(name, code), profile:profiles!inner(full_name, village, district, phone)")
+      .select("*, scheme:schemes(name, code), profile:profiles(full_name, village, district, phone)")
       .order("created_at", { ascending: false });
     setRows((data ?? []) as unknown as Row[]);
     setLastUpdate(new Date());

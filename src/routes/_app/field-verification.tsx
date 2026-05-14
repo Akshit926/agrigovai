@@ -62,7 +62,7 @@ function FieldVerificationPage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("applications")
-      .select("id, crop, area_acres, land_id, status, created_at, scheme:schemes(name), profile:profiles!inner(full_name, village, district, taluka, phone, aadhaar)")
+      .select("id, crop, area_acres, land_id, status, created_at, scheme:schemes(name), profile:profiles(full_name, village, district, taluka, phone, aadhaar)")
       .order("created_at", { ascending: false });
     setRows((data ?? []) as unknown as Row[]);
     setLastUpdate(new Date());

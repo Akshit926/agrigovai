@@ -34,8 +34,8 @@ function ReportsPage() {
   useEffect(() => {
     (async () => {
       const [a, g] = await Promise.all([
-        supabase.from("applications").select("id, status, crop, area_acres, land_id, priority_score, created_at, scheme:schemes(name, category), profile:profiles!inner(full_name, village, district)"),
-        supabase.from("grievances").select("id, subject, ai_category, priority, status, created_at, profile:profiles!inner(full_name, village)"),
+        supabase.from("applications").select("id, status, crop, area_acres, land_id, priority_score, created_at, scheme:schemes(name, category), profile:profiles(full_name, village, district)"),
+        supabase.from("grievances").select("id, subject, ai_category, priority, status, created_at, profile:profiles(full_name, village)"),
       ]);
       setApps((a.data ?? []) as unknown as AppRow[]);
       setGriev((g.data ?? []) as unknown as GrievRow[]);

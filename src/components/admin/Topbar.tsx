@@ -35,13 +35,13 @@ export function Topbar() {
       const [a, g] = await Promise.all([
         supabase
           .from("applications")
-          .select("id, status, ai_fraud, scheme:schemes(name), profile:profiles!inner(full_name, village)")
+          .select("id, status, ai_fraud, scheme:schemes(name), profile:profiles(full_name, village)")
           .in("status", ["fraud_flagged", "docs_incomplete"])
           .order("created_at", { ascending: false })
           .limit(5),
         supabase
           .from("grievances")
-          .select("id, subject, priority, profile:profiles!inner(full_name)")
+          .select("id, subject, priority, profile:profiles(full_name)")
           .eq("priority", "high")
           .neq("status", "resolved")
           .order("created_at", { ascending: false })
@@ -79,7 +79,7 @@ export function Topbar() {
       const [a, g] = await Promise.all([
         supabase
           .from("applications")
-          .select("id, crop, land_id, scheme:schemes(name), profile:profiles!inner(full_name, village)")
+          .select("id, crop, land_id, scheme:schemes(name), profile:profiles(full_name, village)")
           .or(`crop.ilike.${term},land_id.ilike.${term}`)
           .limit(6),
         supabase.from("grievances").select("id, subject, ai_category").ilike("subject", term).limit(4),

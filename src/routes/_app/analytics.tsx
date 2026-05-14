@@ -14,7 +14,7 @@ function AnalyticsPage() {
   const [apps, setApps] = useState<AppRow[]>([]);
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("applications").select("status, crop, area_acres, created_at, scheme:schemes(name, category), profile:profiles!inner(district)");
+      const { data } = await supabase.from("applications").select("status, crop, area_acres, created_at, scheme:schemes(name, category), profile:profiles(district)");
       setApps((data ?? []) as unknown as AppRow[]);
     })();
   }, []);

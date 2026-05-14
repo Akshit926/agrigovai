@@ -7,8 +7,8 @@ export async function getAgriIntelResponse(query: string): Promise<string> {
 
   // Fetch live data
   const [appsRes, grieRes] = await Promise.all([
-    supabase.from("applications").select("id, status, crop, area_acres, land_id, priority_score, created_at, ai_fraud, ai_completeness, scheme:schemes(name, code), profile:profiles!inner(full_name, village, district, taluka)").order("created_at", { ascending: false }),
-    supabase.from("grievances").select("id, subject, description, ai_category, priority, status, created_at, admin_response, profile:profiles!inner(full_name, village, district)").order("created_at", { ascending: false }),
+    supabase.from("applications").select("id, status, crop, area_acres, land_id, priority_score, created_at, ai_fraud, ai_completeness, scheme:schemes(name, code), profile:profiles(full_name, village, district, taluka)").order("created_at", { ascending: false }),
+    supabase.from("grievances").select("id, subject, description, ai_category, priority, status, created_at, admin_response, profile:profiles(full_name, village, district)").order("created_at", { ascending: false }),
   ]);
   const apps = (appsRes.data ?? []) as any[];
   const grievances = (grieRes.data ?? []) as any[];
