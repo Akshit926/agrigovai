@@ -1,23 +1,29 @@
 import { createFileRoute, Link, Navigate, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, FilePlus2, MessageSquarePlus, History, Sprout, LogOut, User } from "lucide-react";
+import { LayoutDashboard, FilePlus2, MessageSquarePlus, History, Sprout, LogOut, User, UserCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { NotificationPanel } from "@/components/NotificationPanel";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { KrishiMitraChat } from "@/components/KrishiMitraChat";
 
 export const Route = createFileRoute("/farmer")({
   component: FarmerLayout,
 });
 
-const items = [
-  { to: "/farmer", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/farmer/apply", label: "Apply for Scheme", icon: FilePlus2 },
-  { to: "/farmer/applications", label: "My Applications", icon: History },
-  { to: "/farmer/grievance", label: "File Grievance", icon: MessageSquarePlus },
-];
-
 function FarmerLayout() {
   const { user, role, loading, signOut } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
+
+  const items = [
+    { to: "/farmer" as const, label: t("nav.dashboard"), icon: LayoutDashboard, exact: true },
+    { to: "/farmer/apply" as const, label: t("nav.apply"), icon: FilePlus2 },
+    { to: "/farmer/applications" as const, label: t("nav.applications"), icon: History },
+    { to: "/farmer/grievance" as const, label: t("nav.grievance"), icon: MessageSquarePlus },
+    { to: "/farmer/profile" as const, label: t("nav.profile"), icon: UserCircle },
+  ];
 
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   if (!user) return <Navigate to="/login" />;
@@ -32,28 +38,31 @@ function FarmerLayout() {
               <Sprout className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-base font-bold tracking-tight">AgriGov AI</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Farmer Portal</div>
+              <div className="text-base font-bold tracking-tight">{t("app.name")}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("app.farmer_portal")}</div>
             </div>
           </Link>
           <div className="ml-auto flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 sm:flex">
+            <LanguageSwitcher />
+            <NotificationPanel />
+            <Link to="/farmer/profile" className="hidden items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 transition hover:bg-secondary sm:flex">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-primary"><User className="h-3.5 w-3.5" /></div>
-              <span className="text-xs font-medium">{user.email}</span>
-            </div>
+              <span className="max-w-[120px] truncate text-xs font-medium">{user.email}</span>
+            </Link>
             <Button size="sm" variant="ghost" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
-              <LogOut className="mr-1.5 h-4 w-4" /> Sign out
+              <LogOut className="mr-1.5 h-4 w-4" /> {t("app.sign_out")}
             </Button>
           </div>
         </div>
         <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4">
           {items.map((it) => {
-            const active = it.exact ? path === it.to : path.startsWith(it.to);
+            const active = it.exact ? path === it.to : path.startsWith(it.to) && it.to !== "/farmer";
+            const isExactDash = it.exact && path === it.to;
             const Icon = it.icon;
             return (
               <Link key={it.to} to={it.to}
                 className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-                  active ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+                  (active || isExactDash) ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}>
                 <Icon className="h-4 w-4" /> {it.label}
               </Link>
@@ -68,10 +77,11 @@ function FarmerLayout() {
 
       <footer className="mt-12 border-t border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-4 text-center text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} AgriGov AI · Built for Indian agriculture administration
+          © {new Date().getFullYear()} {t("app.name")} · {t("app.footer")}
         </div>
       </footer>
+
+      <KrishiMitraChat />
     </div>
   );
 }
-
