@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "./dashboard";
@@ -12,12 +12,19 @@ interface AppRow { status: string; crop: string; area_acres: number; created_at:
 
 function AnalyticsPage() {
   const [apps, setApps] = useState<AppRow[]>([]);
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from("applications").select("status, crop, area_acres, created_at, scheme:schemes(name, category), profile:profiles(district)");
-      setApps((data ?? []) as unknown as AppRow[]);
-    })();
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from("applications").select("status, crop, area_acres, created_at, scheme:schemes(name, category), profile:profiles(district)");
+    setApps((data ?? []) as unknown as AppRow[]);
   }, []);
+
+  useEffect(() => {
+    load();
+    const ch = supabase.channel("analytics-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [load]);
 
   // 30 day trend
   const days: { date: string; submitted: number; approved: number }[] = [];

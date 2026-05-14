@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Download, FileBarChart, FileText, FileSpreadsheet, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,16 +31,23 @@ function ReportsPage() {
   const [apps, setApps] = useState<AppRow[]>([]);
   const [griev, setGriev] = useState<GrievRow[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      const [a, g] = await Promise.all([
-        supabase.from("applications").select("id, status, crop, area_acres, land_id, priority_score, created_at, scheme:schemes(name, category), profile:profiles(full_name, village, district)"),
-        supabase.from("grievances").select("id, subject, ai_category, priority, status, created_at, profile:profiles(full_name, village)"),
-      ]);
-      setApps((a.data ?? []) as unknown as AppRow[]);
-      setGriev((g.data ?? []) as unknown as GrievRow[]);
-    })();
+  const load = useCallback(async () => {
+    const [a, g] = await Promise.all([
+      supabase.from("applications").select("id, status, crop, area_acres, land_id, priority_score, created_at, scheme:schemes(name, category), profile:profiles(full_name, village, district)"),
+      supabase.from("grievances").select("id, subject, ai_category, priority, status, created_at, profile:profiles(full_name, village)"),
+    ]);
+    setApps((a.data ?? []) as unknown as AppRow[]);
+    setGriev((g.data ?? []) as unknown as GrievRow[]);
   }, []);
+
+  useEffect(() => {
+    load();
+    const ch = supabase.channel("reports-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "grievances" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [load]);
 
   const stats = useMemo(() => ({
     apps: apps.length,

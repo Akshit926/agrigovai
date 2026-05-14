@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FileText, ShieldAlert, AlertTriangle, Flame, Clock, ArrowRight, Activity, CheckCircle2, MapPin, Filter, RefreshCw, Users } from "lucide-react";
+import { FileText, ShieldAlert, AlertTriangle, Flame, Clock, ArrowRight, Activity, CheckCircle2, MapPin, Filter, RefreshCw, Users, Trash2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { MAHARASHTRA_DISTRICT_LIST, getTalukas } from "@/lib/maharashtra";
 
 export const Route = createFileRoute("/_app/dashboard")({ component: Dashboard });
 
@@ -54,9 +56,10 @@ function Dashboard() {
     return () => { supabase.removeChannel(ch); };
   }, [load]);
 
-  // District/taluka lists
-  const districts = [...new Set(apps.map(a => a.profile?.district).filter(Boolean))] as string[];
-  const talukas = [...new Set(apps.filter(a => districtFilter === "all" || a.profile?.district === districtFilter).map(a => a.profile?.taluka).filter(Boolean))] as string[];
+  // District/taluka — use Maharashtra static list + data-based list
+  const dataDistricts = [...new Set(apps.map(a => a.profile?.district).filter(Boolean))] as string[];
+  const allDistricts = [...new Set([...MAHARASHTRA_DISTRICT_LIST, ...dataDistricts])].sort();
+  const talukas = districtFilter !== "all" ? getTalukas(districtFilter) : [];
 
   // Filtered data
   const filteredApps = apps.filter(a => {
@@ -122,6 +125,12 @@ function Dashboard() {
           <p className="mt-1 text-sm text-muted-foreground">{t("admin.dashboard_desc")}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="destructive" className="h-7 text-[10px]" onClick={async () => {
+            if (!confirm("Delete ALL existing applications and grievances? This cannot be undone.")) return;
+            await supabase.from("grievances").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+            await supabase.from("applications").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+            load();
+          }}><Trash2 className="mr-1 h-3 w-3" /> Clear Old Data</Button>
           <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-success">
             <Activity className="h-3.5 w-3.5 animate-pulse" /> {t("admin.live")}
           </div>
@@ -137,7 +146,7 @@ function Dashboard() {
           <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue placeholder={t("admin.district")} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("admin.all_districts")}</SelectItem>
-            {districts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+            {allDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={talukaFilter} onValueChange={setTalukaFilter}>
