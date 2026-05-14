@@ -14,6 +14,7 @@ import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FarmerIndexRouteImport } from './routes/farmer.index'
+import { Route as FarmerProfileRouteImport } from './routes/farmer.profile'
 import { Route as FarmerGrievanceRouteImport } from './routes/farmer.grievance'
 import { Route as FarmerApplyRouteImport } from './routes/farmer.apply'
 import { Route as FarmerApplicationsRouteImport } from './routes/farmer.applications'
@@ -49,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
 const FarmerIndexRoute = FarmerIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerProfileRoute = FarmerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => FarmerRoute,
 } as any)
 const FarmerGrievanceRoute = FarmerGrievanceRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/farmer/applications': typeof FarmerApplicationsRoute
   '/farmer/apply': typeof FarmerApplyRoute
   '/farmer/grievance': typeof FarmerGrievanceRoute
+  '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/': typeof FarmerIndexRoute
 }
 export interface FileRoutesByTo {
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/farmer/applications': typeof FarmerApplicationsRoute
   '/farmer/apply': typeof FarmerApplyRoute
   '/farmer/grievance': typeof FarmerGrievanceRoute
+  '/farmer/profile': typeof FarmerProfileRoute
   '/farmer': typeof FarmerIndexRoute
 }
 export interface FileRoutesById {
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/farmer/applications': typeof FarmerApplicationsRoute
   '/farmer/apply': typeof FarmerApplyRoute
   '/farmer/grievance': typeof FarmerGrievanceRoute
+  '/farmer/profile': typeof FarmerProfileRoute
   '/farmer/': typeof FarmerIndexRoute
 }
 export interface FileRouteTypes {
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/farmer/applications'
     | '/farmer/apply'
     | '/farmer/grievance'
+    | '/farmer/profile'
     | '/farmer/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/farmer/applications'
     | '/farmer/apply'
     | '/farmer/grievance'
+    | '/farmer/profile'
     | '/farmer'
   id:
     | '__root__'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/farmer/applications'
     | '/farmer/apply'
     | '/farmer/grievance'
+    | '/farmer/profile'
     | '/farmer/'
   fileRoutesById: FileRoutesById
 }
@@ -266,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/farmer/'
       preLoaderRoute: typeof FarmerIndexRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/profile': {
+      id: '/farmer/profile'
+      path: '/profile'
+      fullPath: '/farmer/profile'
+      preLoaderRoute: typeof FarmerProfileRouteImport
       parentRoute: typeof FarmerRoute
     }
     '/farmer/grievance': {
@@ -385,6 +404,7 @@ interface FarmerRouteChildren {
   FarmerApplicationsRoute: typeof FarmerApplicationsRoute
   FarmerApplyRoute: typeof FarmerApplyRoute
   FarmerGrievanceRoute: typeof FarmerGrievanceRoute
+  FarmerProfileRoute: typeof FarmerProfileRoute
   FarmerIndexRoute: typeof FarmerIndexRoute
 }
 
@@ -392,6 +412,7 @@ const FarmerRouteChildren: FarmerRouteChildren = {
   FarmerApplicationsRoute: FarmerApplicationsRoute,
   FarmerApplyRoute: FarmerApplyRoute,
   FarmerGrievanceRoute: FarmerGrievanceRoute,
+  FarmerProfileRoute: FarmerProfileRoute,
   FarmerIndexRoute: FarmerIndexRoute,
 }
 
