@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface Result {
   type: "application" | "grievance";
@@ -146,6 +147,7 @@ export function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <LanguageSwitcher />
         <div className="relative">
           <Button size="icon" variant="ghost" className="relative" onClick={() => setOpenNotif((v) => !v)}>
             <Bell className="h-4 w-4" />
