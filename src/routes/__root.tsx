@@ -33,9 +33,14 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AgriGov AI — Smart Agriculture Administration" },
       { name: "description", content: "AI-powered platform connecting farmers and agriculture officers — apply for schemes, file grievances, and accelerate decisions." },
-      { property: "og:title", content: "AgriGov AI" },
-      { property: "og:description", content: "AI-powered agriculture administration for farmers and officers." },
+      { property: "og:title", content: "AgriGov AI — Smart Agriculture Administration" },
+      { property: "og:description", content: "AI-powered platform connecting farmers and agriculture officers — apply for schemes, file grievances, and accelerate decisions." },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "AgriGov AI — Smart Agriculture Administration" },
+      { name: "twitter:description", content: "AI-powered platform connecting farmers and agriculture officers — apply for schemes, file grievances, and accelerate decisions." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/55cda719-6663-462c-8727-43d4a48639e3/id-preview-36ad2c1f--56ade6a8-877e-449f-b24b-e0be0a9034c2.lovable.app-1778436626216.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/55cda719-6663-462c-8727-43d4a48639e3/id-preview-36ad2c1f--56ade6a8-877e-449f-b24b-e0be0a9034c2.lovable.app-1778436626216.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
