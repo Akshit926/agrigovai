@@ -6,6 +6,8 @@ import {
   Sparkles, TrendingUp, Activity, FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   const { user, role, loading } = useAuth();
+  const { t } = useI18n();
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   if (user) return <Navigate to={role === "farmer" ? "/farmer" : "/dashboard"} />;
 
@@ -34,19 +37,20 @@ function LandingPage() {
               <Sprout className="h-6 w-6" />
             </div>
             <div className="leading-tight">
-              <div className="text-base font-bold tracking-tight">AgriGov AI</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Dept. of Agriculture & Farmers Welfare</div>
+              <div className="text-base font-bold tracking-tight">{t("app.name")}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("app.tagline")}</div>
             </div>
           </Link>
           <nav className="ml-8 hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
-            <a href="#features" className="hover:text-primary">Features</a>
-            <a href="#schemes" className="hover:text-primary">Schemes</a>
-            <a href="#how" className="hover:text-primary">How it works</a>
-            <a href="#contact" className="hover:text-primary">Contact</a>
+            <a href="#features" className="hover:text-primary">{t("landing.features")}</a>
+            <a href="#schemes" className="hover:text-primary">{t("landing.schemes")}</a>
+            <a href="#how" className="hover:text-primary">{t("landing.how")}</a>
+            <a href="#contact" className="hover:text-primary">{t("landing.contact")}</a>
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <Link to="/login" className="rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">Sign in</Link>
-            <Link to="/login" className="hidden rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 sm:inline-flex">Register as Farmer</Link>
+            <LanguageSwitcher />
+            <Link to="/login" className="rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary">{t("app.sign_in")}</Link>
+            <Link to="/login" className="hidden rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 sm:inline-flex">{t("app.register")}</Link>
           </div>
         </div>
       </header>
@@ -59,14 +63,13 @@ function LandingPage() {
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-16 text-primary-foreground lg:grid-cols-[1.15fr_1fr] lg:py-24">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider backdrop-blur">
-              <Sparkles className="h-3 w-3" /> AI-powered · Built for Bharat
+              <Sparkles className="h-3 w-3" /> {t("landing.hero_badge")}
             </div>
             <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Smart Agriculture <br className="hidden sm:block" />Administration for India
+              {t("landing.hero_title")}
             </h1>
             <p className="mt-4 max-w-xl text-base text-white/90 sm:text-lg">
-              One unified platform for farmers and agriculture officers. Apply for government schemes,
-              file grievances, and let AI handle document checks, fraud detection and field verification — instantly.
+              {t("landing.hero_desc")}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link to="/login" className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-primary shadow-lg hover:bg-white/95">
