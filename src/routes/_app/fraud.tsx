@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ShieldAlert, AlertTriangle, TrendingUp, Users, Search, Filter, MapPin, FileText, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { ShieldAlert, AlertTriangle, TrendingUp, Users, Search, Filter, MapPin, FileText, Eye, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "./dashboard";
@@ -27,16 +27,24 @@ function FraudPage() {
   const [riskFilter, setRiskFilter] = useState("all");
   const [districtFilter, setDistrictFilter] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from("applications")
+      .select("*, scheme:schemes(name, code), profile:profiles!inner(full_name, village, district, phone)")
+      .order("created_at", { ascending: false });
+    setRows((data ?? []) as unknown as Row[]);
+    setLastUpdate(new Date());
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("applications")
-        .select("*, scheme:schemes(name, code), profile:profiles!inner(full_name, village, district, phone)")
-        .order("created_at", { ascending: false });
-      setRows((data ?? []) as unknown as Row[]);
-    })();
-  }, []);
+    load();
+    const ch = supabase.channel("fraud-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [load]);
 
   const flagged = rows.filter((r) => r.ai_fraud?.flagged);
   const high = flagged.filter((r) => (r.ai_fraud?.riskScore ?? 0) >= 75);

@@ -1,6 +1,7 @@
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { Topbar } from "@/components/admin/Topbar";
+import { AgriIntelChat } from "@/components/admin/AgriIntelChat";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_app")({
@@ -23,6 +24,8 @@ function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <AgriIntelChat />
     </div>
   );
 }
+
